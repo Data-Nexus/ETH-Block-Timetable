@@ -1,65 +1,74 @@
-import { BigInt } from "@graphprotocol/graph-ts"
-import {
-  WETH,
-  Approval,
-  Transfer,
-  Deposit,
-  Withdrawal
-} from "../generated/WETH/WETH"
-import { ExampleEntity } from "../generated/schema"
+import { ethereum } from '@graphprotocol/graph-ts'
+import { fiveMinBlock, hourBlock, dayBlock, weekBlock } from "../generated/schema"
 
-export function handleApproval(event: Approval): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
+export function handleBlock(block: ethereum.Block): void {
+  
+  // Create and Maintain Five Min Block
+  const fiveMin = block.timestamp.toI32() / 300 
+  const unixFiveMin = fiveMin * 300
+  let FiveMinBlockId = unixFiveMin.toString()
+  
+  let fiveMinBlockEntity = fiveMinBlock.load(FiveMinBlockId)
 
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
-
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
+  if (!fiveMinBlockEntity) {
+    fiveMinBlockEntity                 = new fiveMinBlock(FiveMinBlockId)
+    fiveMinBlockEntity.fiveMin            = unixFiveMin
+    fiveMinBlockEntity.startBlockNum   = block.number    
   }
+  
+  fiveMinBlockEntity.endBlockNum       = block.number 
+  fiveMinBlockEntity.save()
+  // Five Min Block End
 
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
+  // Create and Maintain Hour Block
+  const hour = block.timestamp.toI32() / 3600 
+  const unixHour = hour * 3600
+  let hourBlockId = hour.toString()
+  
+  let hourBlockEntity = hourBlock.load(hourBlockId)
 
-  // Entity fields can be set based on event parameters
-  entity.src = event.params.src
-  entity.guy = event.params.guy
+  if (!hourBlockEntity) {
+    hourBlockEntity                 = new hourBlock(hourBlockId)
+    hourBlockEntity.hour            = unixHour
+    hourBlockEntity.startBlockNum   = block.number    
+  }
+  
+  hourBlockEntity.endBlockNum       = block.number 
+  hourBlockEntity.save()
+  // Hour Block End
 
-  // Entities can be written to the store with `.save()`
-  entity.save()
+  // Create and Maintain Day Block
+  const day = block.timestamp.toI32() / 86400 
+  const unixDay = day * 86400
+  let dayBlockId = day.toString()
 
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
+  let dayBlockEntity = dayBlock.load(dayBlockId)
 
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.name(...)
-  // - contract.approve(...)
-  // - contract.totalSupply(...)
-  // - contract.transferFrom(...)
-  // - contract.decimals(...)
-  // - contract.balanceOf(...)
-  // - contract.symbol(...)
-  // - contract.transfer(...)
-  // - contract.allowance(...)
+  if (!dayBlockEntity) {
+    dayBlockEntity                 = new dayBlock(dayBlockId)
+    dayBlockEntity.day             = unixDay
+    dayBlockEntity.startBlockNum   = block.number    
+  }
+  
+  dayBlockEntity.endBlockNum       = block.number 
+  dayBlockEntity.save()
+  // Day Block End
+
+  // Create and Maintain Week Block
+  const week = block.timestamp.toI32() / 604800
+  const unixWeek = week * 604800
+  let weekBlockId = week.toString()
+
+  let weekBlockEntity = weekBlock.load(weekBlockId)
+
+  if (!weekBlockEntity) {
+    weekBlockEntity                 = new weekBlock(weekBlockId)
+    weekBlockEntity.week            = unixWeek
+    weekBlockEntity.startBlockNum   = block.number    
+  }
+  
+  weekBlockEntity.endBlockNum       = block.number 
+  weekBlockEntity.save()
+  //Week Block End
+
 }
-
-export function handleTransfer(event: Transfer): void {}
-
-export function handleDeposit(event: Deposit): void {}
-
-export function handleWithdrawal(event: Withdrawal): void {}
